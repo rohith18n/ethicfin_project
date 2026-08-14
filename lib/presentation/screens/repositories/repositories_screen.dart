@@ -97,7 +97,7 @@ class _RepositoriesScreenState extends State<RepositoriesScreen> {
                 return CustomScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
-                    // Filter & Sort Header
+                    // Sort & Filter Bar
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -105,16 +105,12 @@ class _RepositoriesScreenState extends State<RepositoriesScreen> {
                           availableLanguages: state.availableLanguages,
                           selectedLanguage: state.selectedLanguage,
                           selectedSort: state.selectedSort,
-                          searchFilter: state.searchFilter,
                           onSelectLanguage: (lang) => context
                               .read<RepositoriesBloc>()
                               .add(LanguageFilterChanged(lang)),
                           onSelectSort: (sort) => context
                               .read<RepositoriesBloc>()
                               .add(SortRepositoriesChanged(sort)),
-                          onSearchChanged: (query) => context
-                              .read<RepositoriesBloc>()
-                              .add(SearchQueryFilterChanged(query)),
                           onClearAll: () => context
                               .read<RepositoriesBloc>()
                               .add(const ClearRepoFiltersRequested()),
@@ -156,7 +152,7 @@ class _RepositoriesScreenState extends State<RepositoriesScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark, RepositoriesLoaded state) {
-    final hasFilters = state.searchFilter.isNotEmpty || state.selectedLanguage != null;
+    final hasLanguageFilter = state.selectedLanguage != null;
 
     return Center(
       child: Padding(
@@ -172,22 +168,22 @@ class _RepositoriesScreenState extends State<RepositoriesScreen> {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                hasFilters ? Icons.search_off_rounded : Icons.folder_open_rounded,
+                hasLanguageFilter ? Icons.filter_alt_off_rounded : Icons.folder_open_rounded,
                 size: 32,
                 color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              hasFilters ? 'No Matching Repositories' : 'No Public Repositories',
+              hasLanguageFilter ? 'No Repositories in ${state.selectedLanguage}' : 'No Public Repositories',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
             ),
             const SizedBox(height: 8),
             Text(
-              hasFilters
-                  ? 'Try adjusting your search query or language filter.'
+              hasLanguageFilter
+                  ? 'No repositories found matching the selected language filter.'
                   : '@${widget.username} does not have any public repositories yet.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -195,14 +191,14 @@ class _RepositoriesScreenState extends State<RepositoriesScreen> {
                 color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
               ),
             ),
-            if (hasFilters) ...[
+            if (hasLanguageFilter) ...[
               const SizedBox(height: 16),
               TextButton.icon(
                 onPressed: () => context
                     .read<RepositoriesBloc>()
-                    .add(const ClearRepoFiltersRequested()),
+                    .add(const LanguageFilterChanged(null)),
                 icon: const Icon(Icons.clear_all_rounded, size: 16),
-                label: const Text('Reset Filters'),
+                label: const Text('Show All Languages'),
               ),
             ],
           ],

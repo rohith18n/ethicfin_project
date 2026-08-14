@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../errors/exceptions.dart';
 
 class ApiClient {
   final Dio dio;
+  final SharedPreferences? sharedPreferences;
 
-  ApiClient({Dio? customDio})
+  ApiClient({Dio? customDio, this.sharedPreferences})
       : dio = customDio ??
             Dio(
               BaseOptions(
@@ -15,7 +17,20 @@ class ApiClient {
                 headers: ApiConstants.defaultHeaders,
                 responseType: ResponseType.json,
               ),
-            );
+            ) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final savedToken = sharedPreferences?.getString('github_token') ?? '';
+          final token = savedToken.isNotEmpty ? savedToken : ApiConstants.githubToken;
+          if (token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+      ),
+    );
+  }
 
   Future<dynamic> get(
     String path, {
@@ -62,16 +77,18 @@ class ApiClient {
           // Check for rate limit headers
           final resetHeader = error.response?.headers.value('x-ratelimit-reset');
           DateTime? resetTime;
+          String rateLimitMsg = 'GitHub API rate limit exceeded (60 req/hr). Add a GitHub Token in settings for 5,000 req/hr.';
           if (resetHeader != null) {
             final epoch = int.tryParse(resetHeader);
             if (epoch != null) {
               resetTime = DateTime.fromMillisecondsSinceEpoch(epoch * 1000);
+              final remainingMins = resetTime.difference(DateTime.now()).inMinutes;
+              if (remainingMins > 0) {
+                rateLimitMsg = 'GitHub rate limit reached. Resets in $remainingMins min (or add a GitHub Token for 5,000 req/hr).';
+              }
             }
           }
-          return RateLimitException(
-            serverMessage ?? 'GitHub API rate limit exceeded. Please wait a few moments.',
-            resetTime,
-          );
+          return RateLimitException(rateLimitMsg, resetTime);
         } else if (statusCode != null && statusCode >= 500) {
           return ServerException(
             serverMessage ?? 'GitHub server error ($statusCode).',

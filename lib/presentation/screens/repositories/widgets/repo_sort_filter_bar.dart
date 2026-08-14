@@ -7,10 +7,8 @@ class RepoSortFilterBar extends StatelessWidget {
   final List<String> availableLanguages;
   final String? selectedLanguage;
   final RepoSortOption selectedSort;
-  final String searchFilter;
   final ValueChanged<String?> onSelectLanguage;
   final ValueChanged<RepoSortOption> onSelectSort;
-  final ValueChanged<String> onSearchChanged;
   final VoidCallback onClearAll;
 
   const RepoSortFilterBar({
@@ -18,10 +16,8 @@ class RepoSortFilterBar extends StatelessWidget {
     required this.availableLanguages,
     required this.selectedLanguage,
     required this.selectedSort,
-    required this.searchFilter,
     required this.onSelectLanguage,
     required this.onSelectSort,
-    required this.onSearchChanged,
     required this.onClearAll,
   });
 
@@ -32,50 +28,34 @@ class RepoSortFilterBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Search in repos bar + Sort selector button
+        // Sort Row Header
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  ),
+            Row(
+              children: [
+                Icon(
+                  Icons.sort_rounded,
+                  size: 18,
+                  color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
                 ),
-                child: TextField(
-                  onChanged: onSearchChanged,
-                  style: const TextStyle(fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Filter repositories...',
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.filter_list_rounded,
-                      size: 18,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
-                    ),
-                    filled: false,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                  ),
+                const SizedBox(width: 6),
+                Text(
+                  'Sort by',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary,
+                      ),
                 ),
-              ),
+              ],
             ),
-            const SizedBox(width: 8),
-            // Sort Dropdown Button
+            // Sort Dropdown Selector
             Container(
-              height: 44,
+              height: 38,
               padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
                 ),
@@ -83,7 +63,7 @@ class RepoSortFilterBar extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<RepoSortOption>(
                   value: selectedSort,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
                   borderRadius: BorderRadius.circular(12),
                   dropdownColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
                   items: RepoSortOption.values.map((option) {
@@ -92,11 +72,11 @@ class RepoSortFilterBar extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(option.icon, style: const TextStyle(fontSize: 14)),
+                          Text(option.icon, style: const TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Text(
                             option.label,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -113,7 +93,7 @@ class RepoSortFilterBar extends StatelessWidget {
 
         // Language Filter Chips
         if (availableLanguages.isNotEmpty) ...[
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           SizedBox(
             height: 34,
             child: ListView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/errors/failures.dart';
+import 'github_token_modal.dart';
 
 class CustomErrorWidget extends StatelessWidget {
   final AppFailure? failure;
@@ -17,6 +18,7 @@ class CustomErrorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isRateLimit = failure is RateLimitFailure;
 
     IconData iconData = Icons.error_outline_rounded;
     Color iconColor = AppColors.githubRed;
@@ -32,7 +34,6 @@ class CustomErrorWidget extends StatelessWidget {
       iconData = Icons.hourglass_top_rounded;
       iconColor = AppColors.githubYellow;
       title = 'Rate Limit Reached';
-      description = 'GitHub allows 60 unauthenticated requests per hour. Please wait a few minutes before trying again.';
     } else if (failure is NetworkFailure) {
       iconData = Icons.wifi_off_rounded;
       iconColor = AppColors.githubBlue;
@@ -103,8 +104,30 @@ class CustomErrorWidget extends StatelessWidget {
                       height: 1.4,
                     ),
               ),
-              if (onRetry != null) ...[
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
+              if (isRateLimit) ...[
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await GithubTokenModal.show(context);
+                    if (onRetry != null) onRetry!();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.githubYellow,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.key_rounded, size: 18),
+                  label: const Text(
+                    'Add API Token (5,000 req/hr)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              if (onRetry != null)
                 FilledButton.icon(
                   onPressed: onRetry,
                   style: FilledButton.styleFrom(
@@ -118,7 +141,6 @@ class CustomErrorWidget extends StatelessWidget {
                   icon: const Icon(Icons.refresh_rounded, size: 18),
                   label: const Text('Try Again', style: TextStyle(fontWeight: FontWeight.w600)),
                 ),
-              ],
             ],
           ),
         ),

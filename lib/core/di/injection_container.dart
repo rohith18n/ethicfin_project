@@ -22,7 +22,7 @@ Future<void> initDependencies({SharedPreferences? customPrefs}) async {
   // 1. External
   final sharedPreferences = customPrefs ?? await SharedPreferences.getInstance();
   sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
-  sl.registerLazySingleton<ApiClient>(() => ApiClient());
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(sharedPreferences: sl()));
 
   // 2. Data Sources
   sl.registerLazySingleton<GithubRemoteDataSource>(

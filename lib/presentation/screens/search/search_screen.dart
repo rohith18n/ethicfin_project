@@ -12,6 +12,7 @@ import '../../blocs/search/search_state.dart';
 import '../../blocs/theme/theme_cubit.dart';
 import '../../blocs/theme/theme_state.dart';
 import '../../widgets/custom_error_widget.dart';
+import '../../widgets/github_token_modal.dart';
 import '../repositories/repositories_screen.dart';
 import 'widgets/empty_search_state.dart';
 import 'widgets/recent_searches_widget.dart';
@@ -91,6 +92,11 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.key_rounded, size: 20),
+                tooltip: 'Configure GitHub API Token',
+                onPressed: () => GithubTokenModal.show(context),
+              ),
               IconButton(
                 icon: Icon(
                   themeState.isDarkMode ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
